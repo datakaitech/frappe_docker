@@ -51,6 +51,8 @@ services:
     platform: linux/amd64
     command:
       - nginx-entrypoint.sh
+    ports:
+      - "10000:8080"
     environment:
       BACKEND: backend:8000
       SOCKETIO: websocket:9000
@@ -64,7 +66,6 @@ services:
       - sites:/home/frappe/frappe-bench/sites
     depends_on:
       - backend
-      - websocket
 
   websocket:
     <<: [*depends_on_configurator, *customizable_image]
@@ -80,15 +81,12 @@ services:
     platform: linux/amd64
     command: bench worker --queue short,default
 
-  queue-long:
-    <<: *backend_defaults
-    platform: linux/amd64
-    command: bench worker --queue long,default,short
 
   scheduler:
     <<: *backend_defaults
     platform: linux/amd64
     command: bench schedule
+    restart: on-failure
 
 # ERPNext requires local assets access (Frappe does not)
 volumes:
